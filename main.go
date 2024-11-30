@@ -24,6 +24,13 @@ func naiveAdder(seq []int) int {
 	return total
 }
 
+// testNaiveAdder generates random sequences and tests the naiveAdder function.
+// It runs the test 'n' times, each time generating a random sequence with a length
+// up to 'lengthUpperBound' and passing it to the naiveAdder function.
+//
+// Parameters:
+//   n: The number of times to run the test.
+//   lengthUpperBound: The upper bound for the length of the generated sequences.
 func testNaiveAdder(n int, lengthUpperBound int) {
 	for i := 0; i < n; i++ {
 		seq := superadder.GenerateRandomSequence(lengthUpperBound)

@@ -13,6 +13,15 @@ type Result struct {
 
 type Pool []*Worker
 
+// SuperAdder is a struct that manages a pool of workers to process workloads
+// and produce results. It includes a channel for workloads, a channel for
+// results, and an upper bound for delay in milliseconds.
+//
+// Fields:
+// - pool: A Pool that manages the worker goroutines.
+// - workloads: A channel through which Workload pointers are sent to be processed. In this context, workloads are slices of integers.
+// - Results: A channel through which Result pointers are sent after processing.
+// - delayUpperBound: An integer representing the upper bound for delay in milliseconds.
 type SuperAdder struct {
 	pool      Pool
 	workloads chan *Workload
@@ -43,6 +52,8 @@ func InitSuperAdder(nWorkers int, submissionBufSize int, taskPoolBufSize int, de
 	return sa
 }
 
+
+// Test runs the SuperAdder with nSequences sequences of length up to seqLengthUpperBound.
 func (sa *SuperAdder) Test(nSequences int, seqLengthUpperBound int) {
 	fmt.Println("Testing Super Adder with ", nSequences, " sequences of length up to ", seqLengthUpperBound)
 	start := time.Now()
@@ -80,7 +91,15 @@ func (sa *SuperAdder) ShutDown() {
 	close(sa.Results)
 }
 
-// Returns Sum of v
+// Sum divides the input slice into batches and distributes the work among the available workers
+// in the SuperAdder pool. It then accumulates the partial sums from each batch into a final sum.
+//
+// Parameters:
+//   v - A slice of integers to be summed.
+//   sumId - An identifier for the sum operation.
+//
+// Panics:
+//   If there are no workers available in the SuperAdder pool, it will panic with the message "WORKERS ARE ALL DEAD!".
 func (sa *SuperAdder) Sum(v []int, sumId int) {		
 	if len(sa.pool) == 0 {
 		panic("WORKERS ARE ALL DEAD!")
@@ -114,6 +133,7 @@ func (sa *SuperAdder) Sum(v []int, sumId int) {
 	}
 }
 
+// accumulate listens for n partial sums on the channel of sequence v and sends the total sum to the results channel.
 func (sa *SuperAdder) accumulate(sumId int, partialSums chan int, done chan bool) {
 	total, c := 0, 0
 	n := cap(partialSums)
@@ -152,7 +172,7 @@ func (sa *SuperAdder) expandWorkerPool(n int) {
 }
 
 
-// Reads n results from the channel and closes the done channel
+// receiveResults reads n results from the channel and closes the done channel
 func receiveResults(ch chan *Result, n int, done chan bool) {
 	for i := 0; i < n; i++ {
 		<- ch
@@ -162,6 +182,7 @@ func receiveResults(ch chan *Result, n int, done chan bool) {
 	done <- true
 }
 
+// GenerateRandomSequence generates a random sequence of integers with a length up to lengthUpperBound.
 func GenerateRandomSequence(lengthUpperBound int) []int {
 	size := rand.Intn(lengthUpperBound) + 1
 	seq := make([]int, size)

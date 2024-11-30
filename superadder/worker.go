@@ -4,6 +4,9 @@ import (
 	"time"
 )
 
+// Worker represents a worker that processes workloads.
+// Each worker has a unique ID, a channel for receiving workloads,
+// a delay duration to simulate processing time, and a channel to signal termination.
 type Worker struct {
 	id int
 	workloads chan *Workload
@@ -11,6 +14,11 @@ type Worker struct {
 	die chan bool
 }
 
+// Run starts the worker's main loop, processing workloads from the workloads channel.
+// It listens for two types of events:
+// 1. A signal from the die channel, which causes the worker to stop running and return.
+// 2. A workload from the workloads channel, which is processed by spawning a new goroutine
+//    that calls the work method with the received load.
 func (w *Worker) Run() {
 	for {
 		select {
